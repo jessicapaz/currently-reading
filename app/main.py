@@ -5,4 +5,5 @@ app = FastAPI()
 
 
 def build_api():
+    app.include_router(router.router)
     return app
