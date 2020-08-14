@@ -1,14 +1,23 @@
 import os
+import logging
 import requests
 import xml.etree.ElementTree as ET
 
+from app import exceptions
+from app import config
+
+log = logging.getLogger(__name__)
+
 
 def _request(user_id):
-    api_key = os.getenv('API_KEY')
-    base_url = os.getenv('GOODREADS_URL')
-    url = f'{base_url}/review/list/{user_id}.xml?key={api_key}&v=2&shelf=currently-reading'
+    api = config.GOODREADS
+    url = f'{api["base_url"]}/review/list/{user_id}.xml?key={api["api_key"]}&v=2&shelf=currently-reading'
     header = {'Accept': 'application/xml'}
-    return requests.get(url, headers=header)
+    try:
+        return requests.get(url, headers=header, timeout=5)
+    except requests.exceptions.RequestException as err:
+        log.exception(err)
+        raise exceptions.GoodreadsException()
 
 
 def get_currently_reading(user_id):
